@@ -22,9 +22,59 @@
 ;;; fonctions ne doivent pas faire d'affichage car c'est la fonction
 ;;; "repl" qui se charge de cela.
 
+(define is-letter?
+	(lambda (str)
+	(if (= 1 (string-length str))
+	 (if (char-alphabetic? (string-ref str 0))
+		#t
+		#f)
+		#f)))
+
+
+(define foldr ;;; parce que scheme c'est un language hipster pis faudrait surtout pas définir les trucs hyper communs
+	(lambda (f base lst)
+	(if (null? lst)
+	base
+	(f (car lst)
+	(foldr f base (cdr lst))))))
+
+(define push-stack
+	(lambda (item stk)
+		(if (null? stk )
+		(cons item '())
+		(cons item stk))))
+
+(define peek-stack
+	(lambda (stk)
+		(if (null? stk)
+		(error "empty stack" stk)
+		(car stk))))
+
+(define pop-stack
+	(lambda (stk)
+		(if(null? stk)
+		(error "empty stack" stk)
+		(cdr stk))))
+		
+(define len-stack ;;; lol
+	(lambda (stk)
+		(length stk)))
+
+(define string-mult
+	(lambda (s1 s2)
+	(* (string->number s1) (string->number s2))))
+	
+(define string-add 
+	(lambda (s1 s2)
+	(+ (string->number s1) (string->number s2))))
+	
+(define string-sub 
+	(lambda (s1 s2)
+	(- (string->number s1) (string->number s2))))
+
 (define superfonction
   (lambda (str)
-  (transformer (split str char-whitespace?))))
+  (transformer (split (str->list str) char-whitespace?))))
   
 (define transformer
  (lambda (grosse-liste)
