@@ -32,22 +32,22 @@
                  (restant lst)
                  (enCours '()))
     
-        (if (null? restant)
-          (if (null? enCours)
-            fini
-            
-            (reverse (cons (reverse enCours) fini)))
-            
-          (if (pred (car restant))
-            (struct (if (null? enCours)
-                      fini
-                      (cons (reverse enCours) fini))
-                    (cdr restant)
-                    '())
-            
-            (struct fini
-                    (cdr restant)
-                    (cons (car restant) enCours)))))))
+      (if (null? restant)
+        (if (null? enCours)
+          fini
+          
+          (reverse (cons (reverse enCours) fini)))
+          
+        (if (pred (car restant))
+          (struct (if (null? enCours)
+                    fini
+                    (cons (reverse enCours) fini))
+                  (cdr restant)
+                  '())
+          
+          (struct fini
+                  (cdr restant)
+                  (cons (car restant) enCours)))))))
 
 ; Géante fonction récursive qui traite tous les cas de figure et retourne la réponse à une commande.
 (define process
@@ -78,10 +78,10 @@
           
           (if (>= (length stack) 2)
             ; S'il y a au moins deux nombres dans le stack.
-            (let ([result ((if (eq? (caar input) #\+) +
+            (let ((result ((if (eq? (caar input) #\+) +
                            (if (eq? (caar input) #\-) -
                            (if (eq? (caar input) #\*) *)))
-                          (cadr (reverse stack)) (car (reverse stack)))])
+                          (cadr (reverse stack)) (car (reverse stack)))))
                           
                  (process (cdr input)
                           (append (remove-last (remove-last stack)) ; Pour retirer les deux derniers éléments du stack.
