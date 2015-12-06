@@ -1,115 +1,122 @@
 #! /usr/bin/env gsi -:dR
 
-;;; Fichier : tp2.scm
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; IFT2035 - Travail pratique 2                      ;;
+;; Calculatrice à précision infinie                  ;;
+;;                                                   ;;
+;; Sulliman Aïad <sulliman.aiad@umontreal.ca>        ;;
+;; François Poitras <francois.poitras@umontreal.ca>  ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;;; Ce programme est une version incomplete du TP2.  Vous devez uniquement
-;;; changer et ajouter du code dans la premi�re section.
+; Tout doit être un nombre, un opérateur, une variable [a-z], ou un opérateur de variable assorti à une lettre [a-z].
+(define accepted_operators '(#\+ #\- #\*))
+(define variable_operator #\=)
+      
+; http://computer-programming-forum.com/40-scheme/089302221d8fd75e.htm
+(define implode
+  (lambda (s*)
+    (string->symbol
+      (apply string-append
+             (map symbol->string s*))))) 
 
-;;;----------------------------------------------------------------------------
+; http://stackoverflow.com/a/5007129/5354535
+(define (remove-last lst)
+  (if (null? (cdr lst))
+    '()
+    (cons (car lst) (remove-last (cdr lst)))))
 
-;;; Vous devez modifier cette section.  La fonction "traiter" doit
-;;; �tre d�finie, et vous pouvez ajouter des d�finitions de fonction
-;;; afin de bien d�composer le traitement � faire en petites
-;;; fonctions.  Il faut vous limiter au sous-ensemble *fonctionnel* de
-;;; Scheme dans votre codage (donc n'utilisez pas set!, set-car!,
-;;; begin, etc).
-
-;;; La fonction traiter re�oit en param�tre une liste de caract�res
-;;; contenant la requ�te lue et le dictionnaire des variables sous
-;;; forme d'une liste d'association.  La fonction retourne
-;;; une paire contenant la liste de caract�res qui sera imprim�e comme
-;;; r�sultat de l'expression entr�e et le nouveau dictionnaire.  Vos
-;;; fonctions ne doivent pas faire d'affichage car c'est la fonction
-;;; "repl" qui se charge de cela.
-
-(define is-letter?
-	(lambda (str)
-	(if (= 1 (string-length str))
-	 (if (char-alphabetic? (string-ref str 0))
-		#t
-		#f)
-		#f)))
-
-
-(define foldr ;;; parce que scheme c'est un language hipster pis faudrait surtout pas d�finir les trucs hyper communs
-	(lambda (f base lst)
-	(if (null? lst)
-	base
-	(f (car lst)
-	(foldr f base (cdr lst))))))
-
-(define push-stack
-	(lambda (item stk)
-		(if (null? stk )
-		(cons item '())
-		(cons item stk))))
-
-(define peek-stack
-	(lambda (stk)
-		(if (null? stk)
-		(error "empty stack" stk)
-		(car stk))))
-
-(define pop-stack
-	(lambda (stk)
-		(if(null? stk)
-		(error "empty stack" stk)
-		(cdr stk))))
-		
-(define len-stack ;;; lol
-	(lambda (stk)
-		(length stk)))
-
-(define string-mult
-	(lambda (s1 s2)
-	(* (string->number s1) (string->number s2))))
-	
-(define string-add 
-	(lambda (s1 s2)
-	(+ (string->number s1) (string->number s2))))
-	
-(define string-sub 
-	(lambda (s1 s2)
-	(- (string->number s1) (string->number s2))))
-
-(define superfonction
-  (lambda (str)
-  (transformer (split (str->list str) char-whitespace?))))
-  
-(define transformer
- (lambda (grosse-liste)
-  (map list->string grosse-liste)))
-
+; Sépare une chaîne de caractères en liste d'éléments en scindant à un caractère particulier.
 (define split
   (lambda (lst pred)
-  (let chelou ((fini '()) 
-               (restant lst)
-               (enCours '()))
-   (if (null? restant)
-    (if (null? enCours)
-     fini
-     (reverse (cons (reverse enCours) fini)))
-   (if (pred (car restant))
-   (chelou ( if (null? enCours)
-      fini
-      (cons (reverse enCours) fini))
-      (cdr restant)
-      '())
-    (chelou 
-      fini
-      (cdr restant)
-      (cons (car restant) enCours)))))))
+    (let struct ((fini '()) 
+                 (restant lst)
+                 (enCours '()))
     
+        (if (null? restant)
+          (if (null? enCours)
+            fini
+            
+            (reverse (cons (reverse enCours) fini)))
+            
+          (if (pred (car restant))
+            (struct (if (null? enCours)
+                      fini
+                      (cons (reverse enCours) fini))
+                    (cdr restant)
+                    '())
+            
+            (struct fini
+                    (cdr restant)
+                    (cons (car restant) enCours)))))))
+
+; Géante fonction récursive qui traite tous les cas de figure et retourne la réponse à une commande.
+(define process
+  (lambda (input stack)
+    (if (= (length input) 0)
+      ; S'il n'y a plus rien comme commandes.
+      (if (= (length stack) 0)
+        ; Et si le stack est vide, retourner une erreur.
+        (string->list "Veuillez entrer une commande.")
+        
+        (if (= (length stack) 1)
+          ; Sinon, si le stack ne contient que le résultat final.
+          (string->list (number->string (car (reverse stack))))
+          
+          ; Si le stack contient trop d'éléments (> 1).
+          (string->list "Erreur de syntaxe: veuillez revoir votre commande.")
+        )
+      )
+      
+      (if (string->number (list->string (car input)))
+        ; S'il s'agit d'un nombre.
+        ; Enregistrer le nombre dans le stack.
+        (process (cdr input) (append stack (cons (string->number (list->string (car input))) '())))
+        
+        (if (member (caar input) accepted_operators)
+          ; Sinon, s'il s'agit d'un opérateur.
+          ; Exécuter l'opération si possible sur les deux derniers nombres du stack.
+          
+          (if (>= (length stack) 2)
+            ; S'il y a au moins deux nombres dans le stack.
+            (let ([result ((if (eq? (caar input) #\+) +
+                           (if (eq? (caar input) #\-) -
+                           (if (eq? (caar input) #\*) *)))
+                          (cadr (reverse stack)) (car (reverse stack)))])
+                          
+                 (process (cdr input)
+                          (append (remove-last (remove-last stack)) ; Pour retirer les deux derniers éléments du stack.
+                                  (cons result '()))) ; Et ensuite rajouter le résultat calculé.
+            )
+            
+            ; Sinon, il manque un élément pour faire une opération.
+            (string->list "Commande invalide, erreur de syntaxe.")
+          )
+          
+          (if (eq? (caar input) variable_operator)
+            ; Sinon, si le premier caractère est un opérateur de variable ("=") et que ***TODO : le deuxième caractère est une lettre entre [a-z]***
+            ; Enregistrer le top de la pile dans la variable correspondante (CDAR)... TODO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            (car (reverse stack))
+            
+            (if (eq? (caar input) "TODO")
+              ; Sinon, s'il s'agit d'une variable, ajouter son contenu au stack.
+              (string->list "TODOOODODOOOOOOOOO")
+              
+              ; Si ce n'est rien de tout ça, arrêter tout traitement et retourner une erreur.
+              (string->list "Commande invalide, erreur de syntaxe.")
+            )
+          )
+        )
+      )
+    )
+  )
+)
+
+; La fonction traiter fait appel à "process" en commençant avec un stack vide.
 (define traiter
   (lambda (expr dict)
-    (cons (append (string->list "*** le programme est ")
-                  '(#\I #\N #\C #\O #\M #\P #\L #\E #\T #\! #\newline)
-                  (string->list "*** la requete lue est: ")
-                  expr
-                  (string->list "\n*** nombre de caract�res: ")
-                  (string->list (number->string (length expr)))
-                  '(#\newline))
-          dict)))
+    (cons (append (process (split expr char-whitespace?) '()) '(#\newline)) dict)
+  )
+)
 
 ;;;----------------------------------------------------------------------------
 
@@ -133,3 +140,4 @@
     (repl '()))) ;; dictionnaire initial est vide
     
 ;;;----------------------------------------------------------------------------
+
