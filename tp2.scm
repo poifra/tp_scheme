@@ -25,10 +25,10 @@
     '()
     (cons (car lst) (remove-last (cdr lst)))))
 
-; Sépare une chaîne de caractères en liste d'éléments en scindant à un caractère particulier.
+; Sépare une chaîne de caractères en liste d'éléments en scindant selon un prédicat donné
 (define split
   (lambda (lst pred)
-    (let struct ((fini '()) 
+    (let recurs ((fini '()) 
                  (restant lst)
                  (en-cours '()))
     
@@ -39,13 +39,13 @@
           (reverse (cons (reverse en-cours) fini)))
           
         (if (pred (car restant))
-          (struct (if (null? en-cours)
+          (recurs (if (null? en-cours)
                     fini
                     (cons (reverse en-cours) fini))
                   (cdr restant)
                   '())
           
-          (struct fini
+          (recurs fini
                   (cdr restant)
                   (cons (car restant) en-cours)))))))
 

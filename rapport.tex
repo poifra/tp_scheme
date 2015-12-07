@@ -1,0 +1,170 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Based on a TeXnicCenter-Template, which was             %%
+%% created by Christoph Börensen                           %%
+%% and slightly modified by Tino Weinkauf.                 %%
+%%                                                         %%
+%% Then, a third guy - me - put in some modifications.     %%
+%%                                                         %%
+%% IFT2035 - Rapport TP1                                   %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[letterpaper,12pt]{scrartcl}
+% Optimised for letter. Add ",twosides" to use the two-sides layout.
+
+% Margins
+    \usepackage{vmargin}
+    \setpapersize{USletter}
+    \setmargins{2.0cm}%	 % Left edge
+               {1.5cm}%  % Top edge
+               {17.7cm}% % Text width
+               {21.0cm}% % Text height
+               {14pt}%	 % Header height
+               {1cm}%    % Header distance
+               {0pt}%	 % Footer height
+               {2cm}%    % Footer distance
+				
+% Graphical bugfix (about footnotes)
+    \usepackage[bottom]{footmisc}
+
+% Fonts and locale
+	\usepackage{t1enc}
+	\usepackage[utf8]{inputenc}
+	\usepackage{times}
+	\usepackage[francais]{babel}
+	\usepackage{SIunits}
+	\usepackage{amsmath}
+
+	\AtBeginDocument {%
+	    \renewcommand\tablename{\textsc{Tableau}}
+	}
+
+% Graphics
+	\usepackage[pdftex]{graphicx}
+	\usepackage{color}
+	\usepackage{eso-pic}
+	\usepackage{everyshi}
+	\renewcommand{\floatpagefraction}{0.7}
+
+% Enable hyperlinks
+	\usepackage[pdfborder=000,pdftex=true]{hyperref}
+	
+% Table layout
+	\usepackage{booktabs}
+
+% Caption
+	\usepackage{ccaption}
+	\captionnamefont{\bf\footnotesize\sffamily}
+	\captiontitlefont{\footnotesize\sffamily}
+	\setlength{\abovecaptionskip}{0mm}
+
+% Header and footer settings
+	\usepackage{scrpage2} 
+	\renewcommand{\headfont}{\footnotesize\sffamily}
+	\renewcommand{\pnumfont}{\footnotesize\sffamily}
+
+% Pagestyles
+	\defpagestyle{cb}{
+		(\textwidth,0pt) % Sets the border line above the header
+		{\pagemark\hfill\headmark\hfill} % Doublesided, left page
+		{\hfill\headmark\hfill\pagemark} % Doublesided, right page
+		{\hfill\headmark\hfill\pagemark} % Onesided
+		(\textwidth,1pt)} % Sets the border line below the header
+		{(\textwidth,1pt) % Sets the border line above the footer
+		{{\it Rapport TP2 (IFT2035)}\hfill Sulliman Aïad et François Poitras} % Doublesided, left page
+		{Sulliman Aïad et François Poitras\hfill{\it Rapport TP2 (IFT2035)}} % Doublesided, right page
+		{Sulliman Aïad et François Poitras\hfill{\it Rapport TP2 (IFT2035)}} % One sided printing
+		(\textwidth,0pt) % Sets the border line below the footer
+	}
+
+% Empty pages style
+	\renewpagestyle{plain}
+		{(\textwidth,0pt)
+			{\hfill}{\hfill}{\hfill}
+		(\textwidth,0pt)}
+		{(\textwidth,0pt)
+			{\hfill}{\hfill}{\hfill}
+		(\textwidth,0pt)}
+
+% Footnotes
+	\renewcommand{\footnoterule}{\rule{5cm}{0.2mm} \vspace{0.3cm}}
+	\deffootnote[1em]{1em}{1em}{\textsuperscript{\normalfont\thefootnotemark}}
+
+\pagestyle{plain}
+
+\begin{document}
+	\begin{center}
+		\vspace{2cm}
+
+		{\Huge\bf\sf Rapport du Travail Pratique 2}
+
+		\vspace{0.5cm}
+
+		{\bf\sf (TP2)}
+
+		\vspace{4cm}
+
+		{\bf\sf Par}
+
+		\vspace{0.5cm}{\large\bf\sf Sulliman Aïad et François Poitras}
+
+		\vspace{2cm}
+
+		{\bf\sf Rapport présenté à}
+
+		\vspace{0.5cm}{\large\bf\sf M. Marc  Feeley}
+
+		\vspace{2cm}
+
+		{\bf\sf Dans le cadre du cours de}
+
+		\vspace{0.5cm}{\large\bf\sf Concepts des langages de programmation (IFT2035)}
+
+		\vspace{\fill}
+		Remis le \today
+
+		\vspace{0.5cm}Université de Montréal
+	\end{center}
+	
+	\newpage
+
+	\pagestyle{cb}
+	
+	\tableofcontents
+
+	\newpage
+	
+	\section{Fonctionnement du programme}
+	Tout comme dans le TP1, le programme est une calculatrice à précision infinie en notation postfixe. Le programme débute dans un mode d'attente, avec le signe «?», pour différencier des instructions de l'interpréteur Gambit. L'utilisateur peut entrer une expression postfixe, demander la valeur d'une variable, ou encore affecter le résultat d'une expression à une variable. Notons qu'il est possible d'utiliser des variables dans les expressions et notons que les variables peuvent seulement être des lettres minuscules.
+
+		En cas de problème, soit avec la syntaxe ou avec l'utilisation de variables non-initialisées, l'utilisateur est informé de l'erreur qu'il a commise et le programme attends la prochaine instruction. Si des variables étaient utilisées avec une mauvaise syntaxe, leur valeur ne sera pas initialisée ou modifiée.
+	
+	%% END OF {Fonctionnement du programme} %%
+	
+    
+	\section{Problèmes de programmation}
+		\subsection{Traitement d'une expression de longueur quelconque }
+        Le traitement d'une expression commence par l'appel à la fonction \textit{process} avec une liste vide comme argument. Cette liste représente la pile qui va servir au calul. Notons aussi que l'autre argument de la fonction est l'expression elle-même, traitée par la fonction \textit{split}. Cette dernière fonction a pour effet de transformer une chaîne de caractères en une liste. Pour ce faire, elle utilise une récursion en forme itérative.
+        
+        La fonction \textit{split} utilise un prédicat pour évaluer si le caractère courant est à utiliser comme séparation ou non. Dans le cas qui nous intéresse, le caractère de séparation est un espace, ce qui signifie que le prédicat est la fonction pré-définie \textit{char-whitespace?} Une fonction lambda interne est appelée récursivement avec une liste vide, la liste à construire et une autre liste vide. Les deux listes vides représentent respectivement le résultat total et le mot en cours de traitement. 
+        
+        Si il ne reste plus rien à traiter et que le mot en cours est également vide, cela signifie que tout a été traité et on peut donc retourner la liste complète. Si la liste en cours n'est pas vide, on \textit{cons} l'inverse de la liste en cours à l'inverse de la liste complète. Cela est nécéssaire car les caractères sont ajoutés au début de la liste complète. Pour avoir un résultat qui n'est pas inversé, on doit inverser la liste complète. Un raisonnement similaire explique l'inversion de la liste en cours.
+        
+        D'un autre coté, si il restait des éléments à traiter, on regarde si le caractère courant valide le prédicat. Si oui, on fait un appel récursif de la fonction lambda, en lui passant, dans l'ordre, la liste complète, la concaténation de l'inverse et de la liste en cours et le \textit{cdr} de ce qui reste à traiter. Si le prédicat n'est pas vérifié, l'appel récursif est fait avec la liste complète, le \textit{cdr} de ce qui reste et la concaténation du caractère courant à la liste en cours.
+        
+        Toutes ces appels récursifis font en sorte qu'une fois l'expression entièrement parcourue, la liste complète contient tous les mots de l'expression, selon le prédicat passé en argument.
+        \subsection{Calcul de l'expression}
+        
+        \subsection{Affectation des variables}
+        
+        \subsection{Affichage des résultats et erreurs}
+        
+        \subsection{Traitement des erreurs}
+		
+	%% END OF {Problèmes de programmation} %%
+	\section{Comparaison entre C et Scheme}
+	
+	L'utilisation d'un paradigme strictement fonctionnel a posé quelques difficultés au niveau du 			traitement des expressions, mais a été très bénéfique dans la gestion globale des ressources. Notre code Scheme est également beaucoup plus court. À titre de comparaison, notre code C comporte environ 1000 lignes de code, contre 150 pour Scheme. Cette différence s'explique surtout par le charactère intrinsèquement récursif de Scheme et par l'absence de gestion manuelle de pointeurs.
+	
+	Dans le language fonctionnel, il a été beaucoup plus facile d'implémenter des nombres de longueur arbitriare, car cette fonctionalité est déjà incluse dans Scheme. En C, il nous a fallu créer une structure pour gérer des nombres potentiellement très grands, avec tout les problèmes qui viennent avec. Ces problèmes incluent la gestion manuelle de la mémoire et l'utilisation de pointeurs.
+	
+\end{document}
