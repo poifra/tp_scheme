@@ -25,7 +25,7 @@
     '()
     (cons (car lst) (remove-last (cdr lst)))))
 
-; Sépare une chaîne de caractères en liste d'éléments en scindant selon un prédicat donné
+; Sépare une chaîne de caractères en liste d'éléments en scindant selon un prédicat donné.
 (define split
   (lambda (lst pred)
     (let recurs ((fini '()) 
@@ -135,8 +135,9 @@
               (cons (string->list "Commande invalide, erreur de syntaxe.") dict))))))))
     
       (if output?
-        ; Appel final.
-        (cons (append (car return) '(#\newline)) (cdr return))
+        ; Appel final. Si le retour est numérique, tout s'est bien passé et on sauvegarde le dictionnaire,
+        ; sinon, il y a eu une erreur et on remet le dictionnaire initial.
+        (cons (append (car return) '(#\newline)) (if (string->number (list->string (car return))) (cdr return) dict))
         
         ; Appel interne.
         return))))
